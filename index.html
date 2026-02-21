@@ -9,6 +9,21 @@
 </head>
 <body>
   <canvas id="fireworks-canvas" aria-hidden="true"></canvas>
+  <audio id="bg-music" loop preload="metadata" playsinline>
+    <!--
+      Add your own peaceful Ramadan/Eid instrumental file:
+      1) Put audio files in a local folder (example: media/)
+      2) Replace file names below with your own .mp3/.ogg
+    -->
+    <source src="media/ramadan-instrumental.mp3" type="audio/mpeg" />
+    <source src="media/ramadan-instrumental.ogg" type="audio/ogg" />
+    Your browser does not support the audio element.
+  </audio>
+
+  <button id="music-toggle" class="music-toggle" type="button" aria-pressed="true" aria-label="Mute background music">
+    <span class="music-toggle__dot" aria-hidden="true"></span>
+    <span class="music-toggle__label">Music On</span>
+  </button>
 
   <div class="sky" aria-hidden="true">
     <div id="stars-layer"></div>

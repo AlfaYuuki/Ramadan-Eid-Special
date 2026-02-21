@@ -3,9 +3,12 @@
 const starLayer = document.getElementById("stars-layer");
 const canvas = document.getElementById("fireworks-canvas");
 const ctx = canvas?.getContext("2d", { alpha: true });
+const bgMusic = document.getElementById("bg-music");
+const musicToggle = document.getElementById("music-toggle");
+const musicToggleLabel = musicToggle?.querySelector(".music-toggle__label");
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-if (!starLayer || !canvas || !ctx) {
+if (!starLayer || !canvas || !ctx || !bgMusic || !musicToggle || !musicToggleLabel) {
   throw new Error("Required visual layers are missing from the page.");
 }
 
@@ -27,9 +30,11 @@ let resizeTimer = 0;
 
 const palette = ["#f4d77b", "#8be9ff", "#ff91d0", "#7eb6ff", "#c2ff9a", "#ffd1a8"];
 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+const MUSIC_VOLUME = 0.24;
 
 let audioContext = null;
 let fireworkNoiseBuffer = null;
+let musicEnabled = true;
 
 /**
  * Create floating stars with randomized size, position, and animation timing.
@@ -77,6 +82,39 @@ function resizeCanvas() {
 
 function randomBetween(min, max) {
   return Math.random() * (max - min) + min;
+}
+
+function updateMusicButtonState() {
+  const isPlaying = !bgMusic.paused && !bgMusic.muted;
+
+  musicToggle.classList.toggle("is-off", !musicEnabled);
+  musicToggle.classList.toggle("is-waiting", musicEnabled && !isPlaying);
+  musicToggle.setAttribute("aria-pressed", String(musicEnabled));
+  musicToggle.setAttribute("aria-label", musicEnabled ? "Mute background music" : "Unmute background music");
+  musicToggleLabel.textContent = !musicEnabled ? "Music Off" : isPlaying ? "Music On" : "Play Music";
+}
+
+async function playBackgroundMusic() {
+  if (!musicEnabled) {
+    return false;
+  }
+
+  try {
+    await bgMusic.play();
+    updateMusicButtonState();
+    return true;
+  } catch {
+    updateMusicButtonState();
+    return false;
+  }
+}
+
+function setupBackgroundMusic() {
+  // Keep volume calm and non-intrusive for a spiritual background ambience.
+  bgMusic.volume = MUSIC_VOLUME;
+  bgMusic.loop = true;
+  bgMusic.muted = false;
+  updateMusicButtonState();
 }
 
 function getAudioContext() {
@@ -233,13 +271,14 @@ function playExplosionSound(x, intensity = 1) {
 
 function unlockAudio() {
   const context = getAudioContext();
-  if (!context || context.state === "running") {
-    return;
+  if (context && context.state !== "running") {
+    context.resume().catch(() => {
+      // Ignore rejected resume attempts; next interaction will try again.
+    });
   }
 
-  context.resume().catch(() => {
-    // Ignore rejected resume attempts; next interaction will try again.
-  });
+  // Mobile browsers may require interaction before media playback is allowed.
+  void playBackgroundMusic();
 }
 
 class Firework {
@@ -404,6 +443,8 @@ function getResponsiveStarCount() {
 function init() {
   resizeCanvas();
   generateStars(STAR_COUNT);
+  setupBackgroundMusic();
+  void playBackgroundMusic();
 
   // Start with a small welcome burst after initial paint.
   setTimeout(() => {
@@ -425,6 +466,22 @@ window.addEventListener("resize", () => {
   }, 120);
 });
 
+musicToggle.addEventListener("click", () => {
+  musicEnabled = !musicEnabled;
+
+  if (!musicEnabled) {
+    bgMusic.pause();
+    updateMusicButtonState();
+    return;
+  }
+
+  void playBackgroundMusic();
+});
+
+bgMusic.addEventListener("play", updateMusicButtonState);
+bgMusic.addEventListener("pause", updateMusicButtonState);
+bgMusic.addEventListener("ended", updateMusicButtonState);
+
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) {
     cancelAnimationFrame(frameId);
@@ -433,6 +490,10 @@ document.addEventListener("visibilitychange", () => {
 
   nextLaunchTime = performance.now() + 250;
   frameId = requestAnimationFrame(animate);
+
+  if (musicEnabled && bgMusic.paused) {
+    void playBackgroundMusic();
+  }
 });
 
 window.addEventListener("pointerdown", unlockAudio, { once: true, passive: true });
