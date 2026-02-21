@@ -1,0 +1,571 @@
+﻿:root {
+  --night-top: #03112f;
+  --night-mid: #092351;
+  --night-bottom: #010714;
+  --moon-core: #f7efc0;
+  --moon-glow: rgba(246, 232, 162, 0.5);
+  --text-main: #f8f9ff;
+  --text-soft: #d8e2ff;
+  --card-bg: rgba(18, 38, 76, 0.38);
+  --card-border: rgba(212, 228, 255, 0.28);
+  --accent: #f4d77b;
+  --mosque-main: #020a1b;
+  --mosque-soft: #041633;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: "Trebuchet MS", "Segoe UI", Tahoma, sans-serif;
+}
+
+body {
+  position: relative;
+  min-height: 100svh;
+  overflow: hidden;
+  color: var(--text-main);
+  background:
+    radial-gradient(1200px 700px at 75% 20%, rgba(97, 141, 234, 0.25), transparent 60%),
+    radial-gradient(1000px 580px at 20% 10%, rgba(52, 110, 196, 0.22), transparent 65%),
+    linear-gradient(180deg, var(--night-top) 0%, var(--night-mid) 45%, var(--night-bottom) 100%);
+}
+
+.sky,
+#stars-layer,
+#fireworks-canvas,
+.mosque {
+  position: fixed;
+  inset: 0;
+}
+
+.sky {
+  z-index: 0;
+}
+
+#stars-layer {
+  z-index: 0;
+  overflow: hidden;
+}
+
+.star {
+  position: absolute;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.85);
+  transform-origin: center;
+  will-change: transform, opacity;
+  animation:
+    twinkle var(--twinkle-duration, 3.5s) ease-in-out infinite,
+    float-star var(--drift-duration, 26s) linear infinite;
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.25);
+  }
+}
+
+@keyframes float-star {
+  0% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 9px -14px;
+  }
+  100% {
+    translate: 0 -28px;
+  }
+}
+
+.moon-wrapper {
+  position: absolute;
+  top: clamp(5rem, 9vw, 8rem);
+  right: clamp(2.5rem, 9vw, 8rem);
+  width: clamp(7rem, 13vw, 11rem);
+  aspect-ratio: 1 / 1;
+  display: grid;
+  place-items: center;
+  animation: moon-sway 9s ease-in-out infinite;
+}
+
+.moon-halo {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--moon-glow) 0%, rgba(246, 232, 162, 0.05) 55%, transparent 72%);
+  filter: blur(3px);
+  animation: halo-breathe 4.5s ease-in-out infinite;
+}
+
+.crescent {
+  position: relative;
+  width: 68%;
+  height: 68%;
+  border-radius: 50%;
+  background: var(--moon-core);
+  box-shadow:
+    0 0 22px rgba(255, 238, 166, 0.75),
+    0 0 52px rgba(255, 238, 166, 0.32);
+  animation: moon-glow 4.5s ease-in-out infinite;
+}
+
+.crescent::after {
+  content: "";
+  position: absolute;
+  width: 88%;
+  height: 88%;
+  top: 6%;
+  left: 30%;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #102851, #040f27);
+}
+
+@keyframes moon-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 20px rgba(255, 238, 166, 0.6),
+      0 0 44px rgba(255, 238, 166, 0.25);
+  }
+  50% {
+    box-shadow:
+      0 0 30px rgba(255, 238, 166, 0.9),
+      0 0 72px rgba(255, 238, 166, 0.38);
+  }
+}
+
+@keyframes halo-breathe {
+  0%,
+  100% {
+    opacity: 0.52;
+    scale: 1;
+  }
+  50% {
+    opacity: 0.85;
+    scale: 1.08;
+  }
+}
+
+@keyframes moon-sway {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: -8px 6px;
+  }
+}
+
+#fireworks-canvas {
+  z-index: 2;
+  pointer-events: none;
+}
+
+.lanterns {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.fanous {
+  position: absolute;
+  left: var(--x);
+  top: calc(var(--drop) + env(safe-area-inset-top, 0px));
+  width: clamp(2rem, 2.8vw, 3rem);
+  height: clamp(4.5rem, 8.4vw, 6.2rem);
+  transform-origin: center calc(-1 * var(--drop));
+  animation: fanous-sway var(--swing, 8s) ease-in-out var(--delay, 0s) infinite;
+  transform: translateX(-50%) scale(var(--scale, 1)) rotate(5deg);
+  filter: drop-shadow(0 0 12px rgba(255, 206, 115, 0.34));
+}
+
+.fanous::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% - 2px);
+  width: 2px;
+  height: var(--drop);
+  translate: -50% 0;
+  background: linear-gradient(180deg, rgba(194, 216, 255, 0.92), rgba(125, 145, 188, 0.25));
+  border-radius: 999px;
+}
+
+.fanous::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: calc(100% - 2px);
+  width: 5px;
+  height: 20px;
+  translate: -50% 0;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 213, 128, 0.96), rgba(208, 99, 38, 0.8));
+  box-shadow: 0 0 12px rgba(255, 188, 92, 0.58);
+}
+
+.fanous-core {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 224, 150, 0.55);
+  clip-path: polygon(22% 0, 78% 0, 100% 20%, 100% 80%, 78% 100%, 22% 100%, 0 80%, 0 20%);
+  background:
+    radial-gradient(circle at 50% 52%, rgba(255, 248, 221, 0.96) 0 22%, rgba(255, 223, 141, 0.82) 34%, rgba(255, 164, 76, 0.38) 58%, transparent 74%),
+    linear-gradient(180deg, rgba(255, 216, 143, 0.98) 0%, rgba(247, 170, 88, 0.95) 46%, rgba(188, 82, 39, 0.92) 100%);
+  box-shadow:
+    0 0 18px rgba(255, 198, 114, 0.55),
+    inset 0 0 16px rgba(255, 240, 205, 0.5),
+    inset 0 -8px 14px rgba(122, 36, 13, 0.38);
+  animation: fanous-glow 3.6s ease-in-out var(--delay, 0s) infinite;
+}
+
+.fanous-core::before,
+.fanous-core::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  width: 68%;
+  height: 8px;
+  translate: -50% 0;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(93, 132, 205, 0.84), rgba(34, 62, 121, 0.82));
+}
+
+.fanous-core::before {
+  top: -7px;
+}
+
+.fanous-core::after {
+  bottom: -7px;
+}
+
+.celebration {
+  position: relative;
+  z-index: 3;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(1rem, 4vw, 2.25rem);
+  text-align: center;
+}
+
+.glass-card {
+  width: min(92vw, 700px);
+  padding: clamp(1.6rem, 3vw, 2.4rem);
+  border-radius: clamp(1rem, 3vw, 1.6rem);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  -webkit-backdrop-filter: blur(15px);
+  backdrop-filter: blur(15px);
+  box-shadow:
+    0 14px 45px rgba(0, 0, 0, 0.35),
+    inset 0 0 20px rgba(233, 244, 255, 0.09),
+    0 0 30px rgba(137, 178, 255, 0.2);
+  animation: card-reveal 1.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.tag {
+  margin: 0;
+  font-size: clamp(0.72rem, 1.4vw, 0.95rem);
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: #b4c8ff;
+}
+
+h1 {
+  margin: 0.55rem 0 0.65rem;
+  font-family: "Palatino Linotype", "Book Antiqua", "Times New Roman", serif;
+  font-size: clamp(2.2rem, 7.2vw, 5rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-main);
+  text-shadow:
+    0 0 12px rgba(255, 255, 255, 0.35),
+    0 0 24px rgba(246, 215, 123, 0.55),
+    0 0 40px rgba(246, 215, 123, 0.4);
+  opacity: 0;
+  animation:
+    text-fade-in 1.8s ease-out 0.25s forwards,
+    text-glow 4.2s ease-in-out 2s infinite;
+}
+
+.wish {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: clamp(0.95rem, 2.2vw, 1.35rem);
+  font-weight: 300;
+  line-height: 1.55;
+  opacity: 0;
+  animation: text-fade-in 1.2s ease-out 0.9s forwards;
+}
+
+.signature {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: clamp(1.1rem, 2.5vw, 2rem);
+  z-index: 4;
+  margin: 0;
+  text-align: center;
+  font-size: clamp(0.82rem, 1.6vw, 1rem);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(227, 236, 255, 0.85);
+}
+
+.mosque {
+  z-index: 1;
+  top: auto;
+  height: clamp(10.5rem, 27vh, 16rem);
+  pointer-events: none;
+}
+
+.mosque .base {
+  position: absolute;
+  inset: auto 0 0;
+  height: 62%;
+  background:
+    linear-gradient(180deg, var(--mosque-soft) 0%, var(--mosque-main) 100%),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 16px,
+      rgba(255, 236, 168, 0.03) 16px 18px,
+      transparent 18px 36px
+    );
+  clip-path: polygon(0 26%, 15% 18%, 34% 24%, 50% 13%, 66% 24%, 85% 18%, 100% 28%, 100% 100%, 0 100%);
+}
+
+.mosque .dome,
+.mosque .minaret {
+  position: absolute;
+  background: linear-gradient(180deg, #07204a, #020a1b);
+}
+
+.mosque .dome {
+  bottom: 37%;
+  border-radius: 50% 50% 0 0;
+}
+
+.mosque .dome::after {
+  content: "";
+  position: absolute;
+  top: -12%;
+  left: 50%;
+  width: 4px;
+  height: 14px;
+  translate: -50% 0;
+  border-radius: 999px;
+  background: rgba(246, 215, 123, 0.62);
+  box-shadow: 0 0 12px rgba(246, 215, 123, 0.7);
+}
+
+.mosque .dome.main {
+  width: min(28vw, 170px);
+  height: min(13vw, 90px);
+  left: 50%;
+  translate: -50% 0;
+}
+
+.mosque .dome.side {
+  width: min(16vw, 100px);
+  height: min(8vw, 58px);
+}
+
+.mosque .dome.side.left {
+  left: 33%;
+}
+
+.mosque .dome.side.right {
+  right: 33%;
+}
+
+.mosque .minaret {
+  bottom: 33%;
+  width: min(4vw, 30px);
+  height: clamp(5.6rem, 14vh, 9rem);
+  border-radius: 9px 9px 0 0;
+}
+
+.mosque .minaret::before {
+  content: "";
+  position: absolute;
+  inset: -16px 6px auto;
+  height: 16px;
+  border-radius: 8px 8px 0 0;
+  background: linear-gradient(180deg, #0f2f62, #041633);
+}
+
+.mosque .minaret::after {
+  content: "";
+  position: absolute;
+  top: -26px;
+  left: 50%;
+  width: 5px;
+  height: 24px;
+  translate: -50% 0;
+  border-radius: 50px;
+  background: rgba(246, 215, 123, 0.58);
+  box-shadow: 0 0 12px rgba(246, 215, 123, 0.7);
+}
+
+.mosque .minaret.left {
+  left: 20%;
+}
+
+.mosque .minaret.right {
+  right: 20%;
+}
+
+@keyframes text-fade-in {
+  from {
+    opacity: 0;
+    translate: 0 16px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes text-glow {
+  0%,
+  100% {
+    text-shadow:
+      0 0 12px rgba(255, 255, 255, 0.32),
+      0 0 22px rgba(246, 215, 123, 0.42),
+      0 0 34px rgba(246, 215, 123, 0.3);
+  }
+  50% {
+    text-shadow:
+      0 0 20px rgba(255, 255, 255, 0.48),
+      0 0 34px rgba(246, 215, 123, 0.72),
+      0 0 58px rgba(246, 215, 123, 0.5);
+  }
+}
+
+@keyframes card-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(25px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fanous-sway {
+  0%,
+  100% {
+    transform: translateX(-50%) scale(var(--scale, 1)) rotate(5deg);
+  }
+  50% {
+    transform: translateX(-50%) scale(var(--scale, 1)) rotate(-5deg);
+  }
+}
+
+@keyframes fanous-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 14px rgba(255, 198, 114, 0.48),
+      inset 0 0 14px rgba(255, 240, 205, 0.4),
+      inset 0 -8px 14px rgba(122, 36, 13, 0.33);
+    filter: brightness(0.98);
+  }
+  50% {
+    box-shadow:
+      0 0 22px rgba(255, 198, 114, 0.75),
+      inset 0 0 20px rgba(255, 240, 205, 0.62),
+      inset 0 -8px 14px rgba(122, 36, 13, 0.38);
+    filter: brightness(1.12);
+  }
+}
+
+@media (max-width: 820px) {
+  .moon-wrapper {
+    right: 1.6rem;
+  }
+
+  .mosque .dome.side.left {
+    left: 26%;
+  }
+
+  .mosque .dome.side.right {
+    right: 26%;
+  }
+}
+
+@media (max-width: 640px) {
+  .fanous:nth-child(2),
+  .fanous:nth-child(4) {
+    display: none;
+  }
+
+  .fanous {
+    top: calc(var(--drop) * 0.9 + env(safe-area-inset-top, 0px));
+  }
+
+  .glass-card {
+    width: min(94vw, 650px);
+    padding: 1.45rem 1.2rem;
+  }
+
+  h1 {
+    letter-spacing: 0.07em;
+  }
+
+  .wish {
+    max-width: 26ch;
+    margin-inline: auto;
+  }
+
+  .signature {
+    bottom: 0.95rem;
+    letter-spacing: 0.18em;
+  }
+
+  .mosque {
+    height: clamp(9.2rem, 23vh, 12rem);
+  }
+
+  .mosque .minaret.left {
+    left: 13%;
+  }
+
+  .mosque .minaret.right {
+    right: 13%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .star,
+  .moon-wrapper,
+  .moon-halo,
+  .crescent,
+  .fanous,
+  .fanous-core,
+  h1,
+  .glass-card,
+  .wish {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
