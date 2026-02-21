@@ -26,6 +26,10 @@ let frameId = 0;
 let resizeTimer = 0;
 
 const palette = ["#f4d77b", "#8be9ff", "#ff91d0", "#7eb6ff", "#c2ff9a", "#ffd1a8"];
+const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+
+let audioContext = null;
+let fireworkNoiseBuffer = null;
 
 /**
  * Create floating stars with randomized size, position, and animation timing.
@@ -73,6 +77,169 @@ function resizeCanvas() {
 
 function randomBetween(min, max) {
   return Math.random() * (max - min) + min;
+}
+
+function getAudioContext() {
+  if (!AudioContextClass) {
+    return null;
+  }
+
+  if (!audioContext) {
+    audioContext = new AudioContextClass();
+  }
+
+  return audioContext;
+}
+
+function getNoiseBuffer(context) {
+  if (fireworkNoiseBuffer && fireworkNoiseBuffer.sampleRate === context.sampleRate) {
+    return fireworkNoiseBuffer;
+  }
+
+  const length = Math.floor(context.sampleRate * 0.5);
+  const buffer = context.createBuffer(1, length, context.sampleRate);
+  const data = buffer.getChannelData(0);
+
+  for (let i = 0; i < length; i += 1) {
+    const decay = 1 - i / length;
+    data[i] = (Math.random() * 2 - 1) * decay;
+  }
+
+  fireworkNoiseBuffer = buffer;
+  return buffer;
+}
+
+function createPanNode(context, pan) {
+  if (typeof context.createStereoPanner === "function") {
+    const panner = context.createStereoPanner();
+    panner.pan.value = pan;
+    return panner;
+  }
+
+  return context.createGain();
+}
+
+function positionToPan(x) {
+  if (!width) {
+    return 0;
+  }
+
+  const normalized = (x / width) * 2 - 1;
+  return Math.max(-0.9, Math.min(0.9, normalized));
+}
+
+function playLaunchSound(x) {
+  const context = getAudioContext();
+  if (!context || context.state !== "running") {
+    return;
+  }
+
+  const now = context.currentTime;
+  const gain = context.createGain();
+  const oscillator = context.createOscillator();
+  const filter = context.createBiquadFilter();
+  const panNode = createPanNode(context, positionToPan(x));
+
+  filter.type = "highpass";
+  filter.frequency.setValueAtTime(130, now);
+
+  oscillator.type = "triangle";
+  oscillator.frequency.setValueAtTime(randomBetween(180, 260), now);
+  oscillator.frequency.exponentialRampToValueAtTime(72, now + 0.28);
+
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.07, now + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
+
+  oscillator.connect(filter);
+  filter.connect(gain);
+  gain.connect(panNode);
+  panNode.connect(context.destination);
+
+  oscillator.start(now);
+  oscillator.stop(now + 0.32);
+}
+
+function playExplosionSound(x, intensity = 1) {
+  const context = getAudioContext();
+  if (!context || context.state !== "running") {
+    return;
+  }
+
+  const now = context.currentTime;
+  const panNode = createPanNode(context, positionToPan(x));
+  const volume = Math.max(0.45, Math.min(1.2, intensity));
+
+  panNode.connect(context.destination);
+
+  const noise = context.createBufferSource();
+  const noiseFilter = context.createBiquadFilter();
+  const noiseGain = context.createGain();
+
+  noise.buffer = getNoiseBuffer(context);
+  noiseFilter.type = "bandpass";
+  noiseFilter.frequency.setValueAtTime(randomBetween(700, 1400), now);
+  noiseFilter.Q.value = 0.8;
+
+  noiseGain.gain.setValueAtTime(0.0001, now);
+  noiseGain.gain.exponentialRampToValueAtTime(0.22 * volume, now + 0.012);
+  noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.42);
+
+  noise.connect(noiseFilter);
+  noiseFilter.connect(noiseGain);
+  noiseGain.connect(panNode);
+
+  noise.start(now);
+  noise.stop(now + 0.45);
+
+  const boom = context.createOscillator();
+  const boomGain = context.createGain();
+
+  boom.type = "sine";
+  boom.frequency.setValueAtTime(randomBetween(120, 170), now);
+  boom.frequency.exponentialRampToValueAtTime(42, now + 0.36);
+
+  boomGain.gain.setValueAtTime(0.0001, now);
+  boomGain.gain.exponentialRampToValueAtTime(0.12 * volume, now + 0.02);
+  boomGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.38);
+
+  boom.connect(boomGain);
+  boomGain.connect(panNode);
+
+  boom.start(now);
+  boom.stop(now + 0.4);
+
+  if (!reduceMotion) {
+    for (let i = 0; i < 2; i += 1) {
+      const crackle = context.createOscillator();
+      const crackleGain = context.createGain();
+      const delay = randomBetween(0.03, 0.18);
+
+      crackle.type = "square";
+      crackle.frequency.setValueAtTime(randomBetween(900, 2100), now + delay);
+
+      crackleGain.gain.setValueAtTime(0.0001, now + delay);
+      crackleGain.gain.exponentialRampToValueAtTime(0.02, now + delay + 0.005);
+      crackleGain.gain.exponentialRampToValueAtTime(0.0001, now + delay + 0.06);
+
+      crackle.connect(crackleGain);
+      crackleGain.connect(panNode);
+
+      crackle.start(now + delay);
+      crackle.stop(now + delay + 0.07);
+    }
+  }
+}
+
+function unlockAudio() {
+  const context = getAudioContext();
+  if (!context || context.state === "running") {
+    return;
+  }
+
+  context.resume().catch(() => {
+    // Ignore rejected resume attempts; next interaction will try again.
+  });
 }
 
 class Firework {
@@ -126,6 +293,7 @@ class Firework {
 
   explode() {
     const count = reduceMotion ? 18 : Math.floor(randomBetween(44, 82));
+    playExplosionSound(this.x, count / 60);
 
     for (let i = 0; i < count; i += 1) {
       particles.push(new Particle(this.x, this.y, this.color));
@@ -173,11 +341,15 @@ class Particle {
 }
 
 function launchFireworkBurst() {
-  fireworks.push(new Firework());
+  const primary = new Firework();
+  fireworks.push(primary);
+  playLaunchSound(primary.x);
 
   if (!reduceMotion && Math.random() > 0.6) {
     setTimeout(() => {
-      fireworks.push(new Firework());
+      const secondary = new Firework();
+      fireworks.push(secondary);
+      playLaunchSound(secondary.x);
     }, randomBetween(120, 260));
   }
 }
@@ -262,5 +434,9 @@ document.addEventListener("visibilitychange", () => {
   nextLaunchTime = performance.now() + 250;
   frameId = requestAnimationFrame(animate);
 });
+
+window.addEventListener("pointerdown", unlockAudio, { once: true, passive: true });
+window.addEventListener("touchstart", unlockAudio, { once: true, passive: true });
+window.addEventListener("keydown", unlockAudio, { once: true });
 
 init();
