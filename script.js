@@ -1,22 +1,40 @@
-﻿"use strict";
+"use strict";
 
-const starLayer = document.getElementById("stars-layer");
 const canvas = document.getElementById("fireworks-canvas");
-const ctx = canvas?.getContext("2d", { alpha: true });
+const ctx = canvas ? canvas.getContext("2d") : null;
+const starLayer = document.getElementById("stars-layer");
 const bgMusic = document.getElementById("bg-music");
 const musicToggle = document.getElementById("music-toggle");
-const musicToggleLabel = musicToggle?.querySelector(".music-toggle__label");
-const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const musicToggleLabel = musicToggle ? musicToggle.querySelector(".music-toggle__label") : null;
+const introScreen = document.getElementById("intro-screen");
+const introDust = document.getElementById("intro-dust");
+const celebrateBtn = document.getElementById("celebrate-btn");
 
-if (!starLayer || !canvas || !ctx || !bgMusic || !musicToggle || !musicToggleLabel) {
+if (
+  !canvas ||
+  !ctx ||
+  !starLayer ||
+  !bgMusic ||
+  !musicToggle ||
+  !musicToggleLabel ||
+  !introScreen ||
+  !introDust ||
+  !celebrateBtn
+) {
   throw new Error("Required visual layers are missing from the page.");
 }
 
-const STAR_COUNT = reduceMotion
-  ? 40
-  : window.innerWidth < 640
-  ? 80
-  : 150;
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const STAR_COUNT = reduceMotion ? 40 : window.innerWidth < 640 ? 80 : 150;
+const INTRO_ASSEMBLE_MS = reduceMotion ? 520 : 3100;
+const INTRO_BURST_MS = reduceMotion ? 280 : 820;
+const INTRO_REVEAL_MS = reduceMotion ? 300 : 760;
+
+const palette = ["#f4d77b", "#8be9ff", "#ff91d0", "#7eb6ff", "#c2ff9a", "#ffd1a8"];
+const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+const MUSIC_VOLUME = 0.24;
+const SOUND_ON_BY_DEFAULT = true;
 
 let width = 0;
 let height = 0;
@@ -28,17 +46,16 @@ let nextLaunchTime = 0;
 let frameId = 0;
 let resizeTimer = 0;
 
-const palette = ["#f4d77b", "#8be9ff", "#ff91d0", "#7eb6ff", "#c2ff9a", "#ffd1a8"];
-const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-const MUSIC_VOLUME = 0.24;
-const SOUND_ON_BY_DEFAULT = true;
+let fireworksStarted = false;
+let introStarted = false;
+let introCompleted = false;
 
 let audioContext = null;
 let fireworkNoiseBuffer = null;
 let musicEnabled = SOUND_ON_BY_DEFAULT;
 
 /**
- * Create floating stars with randomized size, position, and animation timing.
+ * Build twinkling stars with randomized positions and timings.
  */
 function generateStars(count) {
   const fragment = document.createDocumentFragment();
@@ -54,10 +71,9 @@ function generateStars(count) {
     star.style.left = `${Math.random() * 100}%`;
     star.style.top = `${Math.random() * 72}%`;
     star.style.opacity = (0.32 + Math.random() * 0.68).toFixed(2);
-
-    star.style.setProperty("--twinkle-duration", `${1.8 + Math.random() * 4}s`);
-    star.style.setProperty("--drift-duration", `${18 + Math.random() * 28}s`);
-    star.style.animationDelay = `${Math.random() * 5}s, ${Math.random() * 10}s`;
+    star.style.setProperty("--twinkle-duration", `${randomBetween(2.1, 5.6).toFixed(2)}s`);
+    star.style.setProperty("--drift-duration", `${randomBetween(18, 34).toFixed(2)}s`);
+    star.style.animationDelay = `${randomBetween(-5, 0).toFixed(2)}s, ${randomBetween(-10, 0).toFixed(2)}s`;
 
     fragment.appendChild(star);
   }
@@ -66,7 +82,7 @@ function generateStars(count) {
 }
 
 /**
- * Keep the canvas crisp on high-density displays.
+ * Keep canvas crisp on high-density displays.
  */
 function resizeCanvas() {
   width = window.innerWidth;
@@ -83,6 +99,14 @@ function resizeCanvas() {
 
 function randomBetween(min, max) {
   return Math.random() * (max - min) + min;
+}
+
+function getResponsiveStarCount() {
+  if (reduceMotion) {
+    return 40;
+  }
+
+  return window.innerWidth < 640 ? 80 : 150;
 }
 
 function updateMusicButtonState() {
@@ -102,7 +126,6 @@ async function playBackgroundMusic() {
 
   try {
     await bgMusic.play();
-    void primeFireworkAudio();
     updateMusicButtonState();
     return true;
   } catch {
@@ -112,7 +135,7 @@ async function playBackgroundMusic() {
 }
 
 function setupBackgroundMusic() {
-  // Keep volume calm and non-intrusive for a spiritual background ambience.
+  // Keep background music soft and non-intrusive.
   bgMusic.volume = MUSIC_VOLUME;
   bgMusic.loop = true;
   bgMusic.muted = false;
@@ -236,11 +259,11 @@ function playExplosionSound(x, intensity = 1) {
 
   noise.buffer = getNoiseBuffer(context);
   noiseFilter.type = "bandpass";
-  noiseFilter.frequency.setValueAtTime(randomBetween(700, 1400), now);
+  noiseFilter.frequency.setValueAtTime(randomBetween(650, 1300), now);
   noiseFilter.Q.value = 0.8;
 
   noiseGain.gain.setValueAtTime(0.0001, now);
-  noiseGain.gain.exponentialRampToValueAtTime(0.22 * volume, now + 0.012);
+  noiseGain.gain.exponentialRampToValueAtTime(0.2 * volume, now + 0.012);
   noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.42);
 
   noise.connect(noiseFilter);
@@ -258,7 +281,7 @@ function playExplosionSound(x, intensity = 1) {
   boom.frequency.exponentialRampToValueAtTime(42, now + 0.36);
 
   boomGain.gain.setValueAtTime(0.0001, now);
-  boomGain.gain.exponentialRampToValueAtTime(0.12 * volume, now + 0.02);
+  boomGain.gain.exponentialRampToValueAtTime(0.11 * volume, now + 0.02);
   boomGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.38);
 
   boom.connect(boomGain);
@@ -266,37 +289,6 @@ function playExplosionSound(x, intensity = 1) {
 
   boom.start(now);
   boom.stop(now + 0.4);
-
-  if (!reduceMotion) {
-    for (let i = 0; i < 2; i += 1) {
-      const crackle = context.createOscillator();
-      const crackleGain = context.createGain();
-      const delay = randomBetween(0.03, 0.18);
-      const startTime = now + delay;
-      const endTime = startTime + randomBetween(0.045, 0.08);
-
-      // Softer transient shape to avoid audible click artifacts.
-      crackle.type = "triangle";
-      crackle.frequency.setValueAtTime(randomBetween(700, 1600), startTime);
-      crackle.frequency.exponentialRampToValueAtTime(randomBetween(280, 640), endTime);
-
-      crackleGain.gain.setValueAtTime(0.00001, startTime);
-      crackleGain.gain.linearRampToValueAtTime(0.012, startTime + 0.01);
-      crackleGain.gain.exponentialRampToValueAtTime(0.0001, endTime);
-
-      crackle.connect(crackleGain);
-      crackleGain.connect(panNode);
-
-      crackle.start(startTime);
-      crackle.stop(endTime + 0.01);
-    }
-  }
-}
-
-function unlockAudio() {
-  // Mobile browsers may require interaction before media playback is allowed.
-  void primeFireworkAudio();
-  void playBackgroundMusic();
 }
 
 class Firework {
@@ -412,7 +404,6 @@ function launchFireworkBurst() {
 }
 
 function updateFireworks() {
-  // Clear each frame to avoid an accumulating dark overlay on the page.
   ctx.clearRect(0, 0, width, height);
 
   for (let i = fireworks.length - 1; i >= 0; i -= 1) {
@@ -433,13 +424,16 @@ function updateFireworks() {
     }
   }
 
-  // Safety cap to avoid particle build-up on very long sessions.
   if (particles.length > 1400) {
     particles.splice(0, particles.length - 1400);
   }
 }
 
 function animate(timestamp) {
+  if (!fireworksStarted) {
+    return;
+  }
+
   if (!nextLaunchTime || timestamp >= nextLaunchTime) {
     launchFireworkBurst();
     const interval = reduceMotion ? randomBetween(1800, 2800) : randomBetween(680, 1400);
@@ -450,30 +444,97 @@ function animate(timestamp) {
   frameId = requestAnimationFrame(animate);
 }
 
-function getResponsiveStarCount() {
-  return reduceMotion
-    ? 40
-    : window.innerWidth < 640
-    ? 80
-    : 150;
+function startFireworksShow() {
+  if (fireworksStarted) {
+    return;
+  }
+
+  fireworksStarted = true;
+  nextLaunchTime = 0;
+
+  launchFireworkBurst();
+  if (!reduceMotion) {
+    setTimeout(() => {
+      launchFireworkBurst();
+    }, 220);
+  }
+
+  frameId = requestAnimationFrame(animate);
+}
+
+function buildDustExplosion() {
+  introDust.querySelectorAll(".dust-spark").forEach((spark) => spark.remove());
+
+  const sparkCount = reduceMotion ? 10 : 22;
+  const maxRadius = Math.min(window.innerWidth, window.innerHeight) * (reduceMotion ? 0.11 : 0.18);
+
+  for (let i = 0; i < sparkCount; i += 1) {
+    const angle = randomBetween(0, Math.PI * 2);
+    const radius = randomBetween(maxRadius * 0.35, maxRadius);
+    const dx = Math.cos(angle) * radius;
+    const dy = Math.sin(angle) * radius;
+    const delay = randomBetween(0, reduceMotion ? 0.05 : 0.13);
+    const size = randomBetween(3.8, 8.8).toFixed(2);
+
+    const spark = document.createElement("span");
+    spark.className = "dust-spark";
+    spark.style.setProperty("--dx", `${dx.toFixed(2)}px`);
+    spark.style.setProperty("--dy", `${dy.toFixed(2)}px`);
+    spark.style.setProperty("--delay", `${delay.toFixed(2)}s`);
+    spark.style.setProperty("--size", `${size}px`);
+    introDust.appendChild(spark);
+  }
+
+  introDust.classList.remove("active");
+
+  // Restart animation cleanly if sequence is retriggered.
+  void introDust.offsetWidth;
+  introDust.classList.add("active");
+
+  window.setTimeout(() => {
+    introDust.querySelectorAll(".dust-spark").forEach((spark) => spark.remove());
+  }, 1150);
+}
+
+async function beginExperience() {
+  if (introStarted) {
+    return;
+  }
+
+  introStarted = true;
+  celebrateBtn.disabled = true;
+  celebrateBtn.setAttribute("aria-disabled", "true");
+
+  document.body.classList.add("intro-started");
+
+  // Click on "CELEBRATE" is the user gesture used to unlock audio APIs.
+  void primeFireworkAudio();
+  if (musicEnabled) {
+    await playBackgroundMusic();
+  } else {
+    updateMusicButtonState();
+  }
+
+  setTimeout(() => {
+    document.body.classList.add("intro-burst");
+    buildDustExplosion();
+  }, INTRO_ASSEMBLE_MS);
+
+  setTimeout(() => {
+    introCompleted = true;
+    document.body.classList.add("scene-ready");
+    startFireworksShow();
+  }, INTRO_ASSEMBLE_MS + INTRO_BURST_MS);
+
+  setTimeout(() => {
+    introScreen.classList.add("is-hidden");
+  }, INTRO_ASSEMBLE_MS + INTRO_BURST_MS + INTRO_REVEAL_MS);
 }
 
 function init() {
   resizeCanvas();
   generateStars(STAR_COUNT);
   setupBackgroundMusic();
-  void primeFireworkAudio();
-  void playBackgroundMusic();
-
-  // Start with a small welcome burst after initial paint.
-  setTimeout(() => {
-    launchFireworkBurst();
-    if (!reduceMotion) {
-      launchFireworkBurst();
-    }
-  }, 450);
-
-  frameId = requestAnimationFrame(animate);
 }
 
 window.addEventListener("resize", () => {
@@ -485,6 +546,10 @@ window.addEventListener("resize", () => {
   }, 120);
 });
 
+celebrateBtn.addEventListener("click", () => {
+  void beginExperience();
+});
+
 musicToggle.addEventListener("click", () => {
   musicEnabled = !musicEnabled;
 
@@ -494,7 +559,12 @@ musicToggle.addEventListener("click", () => {
     return;
   }
 
-  void playBackgroundMusic();
+  if (introStarted) {
+    void primeFireworkAudio();
+    void playBackgroundMusic();
+  } else {
+    updateMusicButtonState();
+  }
 });
 
 bgMusic.addEventListener("play", updateMusicButtonState);
@@ -503,22 +573,20 @@ bgMusic.addEventListener("ended", updateMusicButtonState);
 
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) {
-    cancelAnimationFrame(frameId);
+    if (fireworksStarted) {
+      cancelAnimationFrame(frameId);
+    }
     return;
   }
 
-  nextLaunchTime = performance.now() + 250;
-  frameId = requestAnimationFrame(animate);
+  if (fireworksStarted) {
+    nextLaunchTime = performance.now() + 250;
+    frameId = requestAnimationFrame(animate);
+  }
 
-  if (musicEnabled && bgMusic.paused) {
+  if (introCompleted && musicEnabled && bgMusic.paused) {
     void playBackgroundMusic();
   }
 });
-
-window.addEventListener("pointerdown", unlockAudio, { once: true, passive: true });
-window.addEventListener("touchstart", unlockAudio, { once: true, passive: true });
-window.addEventListener("mousedown", unlockAudio, { once: true, passive: true });
-window.addEventListener("click", unlockAudio, { once: true, passive: true });
-window.addEventListener("keydown", unlockAudio, { once: true });
 
 init();
