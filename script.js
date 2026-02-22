@@ -36,7 +36,7 @@ const INTRO_ASSEMBLE_MS = reduceMotion ? 520 : 3100;
 const INTRO_BURST_MS = reduceMotion ? 280 : 820;
 const INTRO_REVEAL_MS = reduceMotion ? 300 : 760;
 
-const palette = ["#f4d77b", "#8be9ff", "#ff91d0", "#7eb6ff", "#c2ff9a", "#ffd1a8"];
+const palette = ["#e8c886", "#d7aa63", "#f0e1c2", "#c9915f", "#e7b99b", "#c6a06e"];
 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
 const MUSIC_VOLUME = 0.24;
 const SOUND_ON_BY_DEFAULT = true;

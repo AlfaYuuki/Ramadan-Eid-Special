@@ -1,16 +1,16 @@
 :root {
-  --night-top: #03112f;
-  --night-mid: #092351;
-  --night-bottom: #010714;
-  --moon-core: #f7efc0;
-  --moon-glow: rgba(246, 232, 162, 0.52);
-  --text-main: #f8f9ff;
-  --text-soft: #d8e2ff;
-  --card-bg: rgba(18, 38, 76, 0.38);
-  --card-border: rgba(212, 228, 255, 0.28);
-  --accent: #f4d77b;
-  --mosque-main: #020a1b;
-  --mosque-soft: #041633;
+  --night-top: #020711;
+  --night-mid: #080f20;
+  --night-bottom: #010308;
+  --moon-core: #ecd3a3;
+  --moon-glow: rgba(219, 186, 121, 0.42);
+  --text-main: #f3f0e8;
+  --text-soft: #d6d0c2;
+  --card-bg: rgba(18, 20, 30, 0.52);
+  --card-border: rgba(200, 178, 135, 0.24);
+  --accent: #ddb56d;
+  --mosque-main: #010306;
+  --mosque-soft: #080f1d;
   --moon-jitter: 1;
   --moon-halo-jitter: 1;
   --moon-ambient: 0.92;
@@ -34,8 +34,8 @@ body {
   overflow: hidden;
   color: var(--text-main);
   background:
-    radial-gradient(1200px 700px at 75% 20%, rgba(97, 141, 234, 0.25), transparent 60%),
-    radial-gradient(1000px 580px at 20% 10%, rgba(52, 110, 196, 0.22), transparent 65%),
+    radial-gradient(1200px 700px at 75% 20%, rgba(35, 44, 72, 0.14), transparent 62%),
+    radial-gradient(1000px 580px at 20% 10%, rgba(24, 31, 56, 0.14), transparent 66%),
     linear-gradient(180deg, var(--night-top) 0%, var(--night-mid) 45%, var(--night-bottom) 100%);
 }
 
@@ -95,7 +95,7 @@ body.scene-ready .intro-screen {
   margin: 0;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: rgba(224, 236, 255, 0.8);
+  color: rgba(217, 207, 186, 0.8);
   font-size: clamp(0.68rem, 1.5vw, 0.92rem);
   transition: opacity 0.5s ease, transform 0.5s ease;
 }
@@ -107,8 +107,8 @@ body.scene-ready .intro-screen {
   padding: clamp(0.78rem, 1.7vw, 1rem) clamp(1.8rem, 4.2vw, 2.9rem);
   border: 1px solid rgba(241, 221, 149, 0.65);
   border-radius: 999px;
-  background: linear-gradient(145deg, rgba(45, 73, 142, 0.45), rgba(12, 22, 45, 0.85));
-  color: #f9f4d8;
+  background: linear-gradient(145deg, rgba(39, 45, 73, 0.52), rgba(9, 11, 19, 0.9));
+  color: #f3deba;
   font-size: clamp(0.84rem, 1.8vw, 1rem);
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -136,10 +136,10 @@ body.scene-ready .intro-screen {
   background:
     radial-gradient(
       ellipse at center,
-      rgba(98, 158, 255, 0.46) 0%,
-      rgba(61, 121, 238, 0.28) 42%,
-      rgba(20, 54, 132, 0.1) 64%,
-      rgba(13, 33, 82, 0) 78%
+      rgba(88, 98, 140, 0.38) 0%,
+      rgba(63, 71, 109, 0.24) 42%,
+      rgba(30, 36, 60, 0.1) 64%,
+      rgba(10, 12, 22, 0) 80%
     );
   transform: scale(0.96);
   animation: button-blue-aura 2.6s ease-in-out infinite;
@@ -326,10 +326,10 @@ body.intro-burst .intro-moon {
   background:
     radial-gradient(
       circle,
-      rgba(208, 231, 255, 0.28) 0%,
-      rgba(122, 171, 255, 0.18) 28%,
-      rgba(51, 92, 173, 0.08) 50%,
-      rgba(7, 18, 44, 0) 74%
+      rgba(255, 221, 162, 0.24) 0%,
+      rgba(209, 158, 96, 0.16) 28%,
+      rgba(102, 76, 44, 0.09) 50%,
+      rgba(12, 9, 6, 0) 74%
     );
   filter: blur(7px);
   transition: opacity 220ms ease, transform 220ms ease;
@@ -355,10 +355,10 @@ body.intro-burst .intro-moon {
   background:
     radial-gradient(
       ellipse at 50% 100%,
-      rgba(131, 165, 225, 0.2) 0%,
-      rgba(86, 121, 190, 0.12) 36%,
-      rgba(22, 46, 96, 0.04) 58%,
-      rgba(3, 10, 29, 0) 78%
+      rgba(86, 91, 132, 0.16) 0%,
+      rgba(54, 58, 90, 0.1) 36%,
+      rgba(20, 20, 36, 0.04) 58%,
+      rgba(2, 3, 8, 0) 78%
     );
   filter: blur(10px);
 }
@@ -372,15 +372,15 @@ body.intro-burst .intro-moon {
   z-index: 1;
   pointer-events: none;
   border-radius: 50%;
-  opacity: calc(0.78 * var(--moon-ambient));
+  opacity: calc(0.72 * var(--moon-ambient));
   transform: scale(var(--moon-jitter));
   background:
     radial-gradient(
       circle,
-      rgba(124, 173, 255, 0.28) 0%,
-      rgba(77, 125, 218, 0.16) 36%,
-      rgba(38, 70, 142, 0.06) 55%,
-      rgba(12, 25, 60, 0) 76%
+      rgba(169, 149, 110, 0.18) 0%,
+      rgba(109, 89, 58, 0.12) 36%,
+      rgba(53, 43, 28, 0.05) 55%,
+      rgba(10, 9, 18, 0) 76%
     );
   filter: blur(6px);
   transition: opacity 2.6s ease, transform 2.6s ease;
@@ -403,10 +403,10 @@ body.intro-burst .intro-moon {
   background:
     radial-gradient(
       ellipse at 50% 50%,
-      rgba(182, 209, 255, 0.24) 0%,
-      rgba(135, 168, 235, 0.14) 32%,
-      rgba(48, 84, 149, 0.05) 62%,
-      rgba(15, 31, 68, 0) 100%
+      rgba(136, 143, 170, 0.2) 0%,
+      rgba(94, 99, 125, 0.12) 32%,
+      rgba(44, 47, 71, 0.05) 62%,
+      rgba(10, 11, 25, 0) 100%
     );
   filter: blur(var(--blur, 10px));
   animation: cloud-drift var(--cloud-duration, 72s) ease-in-out var(--cloud-delay, 0s) infinite alternate;
@@ -415,8 +415,8 @@ body.intro-burst .intro-moon {
 .star {
   position: absolute;
   border-radius: 50%;
-  background: #ffffff;
-  box-shadow: 0 0 12px rgba(255, 255, 255, 0.85);
+  background: #fff7e8;
+  box-shadow: 0 0 10px rgba(255, 241, 212, 0.72);
   transform-origin: center;
   will-change: transform, opacity;
   animation:
@@ -441,7 +441,7 @@ body.intro-burst .intro-moon {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background: radial-gradient(circle, var(--moon-glow) 0%, rgba(246, 232, 162, 0.05) 55%, transparent 72%);
+  background: radial-gradient(circle, var(--moon-glow) 0%, rgba(219, 186, 121, 0.06) 55%, transparent 72%);
   filter: blur(3px);
   opacity: calc(0.76 * var(--moon-halo-jitter));
   transform: scale(var(--moon-jitter));
@@ -456,8 +456,8 @@ body.intro-burst .intro-moon {
   border-radius: 50%;
   background: var(--moon-core);
   box-shadow:
-    0 0 22px rgba(255, 238, 166, 0.75),
-    0 0 52px rgba(255, 238, 166, 0.32);
+    0 0 20px rgba(236, 211, 163, 0.62),
+    0 0 44px rgba(201, 162, 103, 0.24);
   filter: brightness(var(--moon-jitter));
   transition: filter 2.4s ease, box-shadow 2.4s ease;
   animation: moon-glow 4.5s ease-in-out infinite;
@@ -471,7 +471,7 @@ body.intro-burst .intro-moon {
   top: 6%;
   left: 30%;
   border-radius: 50%;
-  background: linear-gradient(180deg, #102851, #040f27);
+  background: linear-gradient(180deg, #0b162f, #040810);
 }
 
 #fireworks-canvas {
@@ -497,8 +497,8 @@ body.intro-burst .intro-moon {
   animation: fanous-sway var(--swing, 8s) ease-in-out var(--delay, 0s) infinite;
   transform: translateX(-50%) scale(var(--scale, 1)) rotate(5deg);
   filter:
-    drop-shadow(0 0 12px rgba(255, 206, 115, 0.34))
-    drop-shadow(0 0 28px rgba(255, 159, 92, 0.16));
+    drop-shadow(0 0 10px rgba(237, 182, 96, 0.3))
+    drop-shadow(0 0 24px rgba(184, 118, 60, 0.14));
 }
 
 .fanous-1 {
@@ -549,7 +549,7 @@ body.intro-burst .intro-moon {
   width: 2px;
   height: var(--drop);
   translate: -50% 0;
-  background: linear-gradient(180deg, rgba(194, 216, 255, 0.92), rgba(125, 145, 188, 0.25));
+  background: linear-gradient(180deg, rgba(195, 175, 137, 0.74), rgba(97, 82, 58, 0.24));
   border-radius: 999px;
 }
 
@@ -594,7 +594,7 @@ body.intro-burst .intro-moon {
   height: 8px;
   translate: -50% 0;
   border-radius: 999px;
-  background: linear-gradient(180deg, rgba(93, 132, 205, 0.84), rgba(34, 62, 121, 0.82));
+  background: linear-gradient(180deg, rgba(146, 118, 78, 0.82), rgba(74, 56, 34, 0.8));
 }
 
 .fanous-core::before {
@@ -625,8 +625,8 @@ body.intro-burst .intro-moon {
   backdrop-filter: blur(15px);
   box-shadow:
     0 14px 45px rgba(0, 0, 0, 0.35),
-    inset 0 0 20px rgba(233, 244, 255, 0.09),
-    0 0 30px rgba(137, 178, 255, 0.2);
+    inset 0 0 20px rgba(255, 237, 199, 0.08),
+    0 0 30px rgba(171, 132, 72, 0.16);
   animation: card-reveal 1.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
@@ -635,7 +635,7 @@ body.intro-burst .intro-moon {
   font-size: clamp(0.72rem, 1.4vw, 0.95rem);
   letter-spacing: 0.26em;
   text-transform: uppercase;
-  color: #b4c8ff;
+  color: #c8b28a;
 }
 
 h1 {
@@ -646,9 +646,9 @@ h1 {
   text-transform: uppercase;
   color: var(--text-main);
   text-shadow:
-    0 0 12px rgba(255, 255, 255, 0.35),
-    0 0 24px rgba(246, 215, 123, 0.55),
-    0 0 40px rgba(246, 215, 123, 0.4);
+    0 0 10px rgba(255, 247, 228, 0.24),
+    0 0 20px rgba(231, 192, 114, 0.42),
+    0 0 34px rgba(200, 147, 74, 0.28);
   opacity: 0;
   animation:
     text-fade-in 1.8s ease-out 0.25s forwards,
@@ -667,7 +667,7 @@ h1 {
 
 .blessing {
   margin: 0.95rem 0 0;
-  color: rgba(214, 227, 255, 0.82);
+  color: rgba(219, 206, 179, 0.84);
   font-size: clamp(0.86rem, 1.8vw, 1.06rem);
   letter-spacing: 0.03em;
   font-weight: 300;
@@ -686,7 +686,7 @@ h1 {
   font-size: clamp(0.82rem, 1.6vw, 1rem);
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: rgba(227, 236, 255, 0.85);
+  color: rgba(224, 210, 182, 0.88);
 }
 
 .music-toggle {
@@ -699,9 +699,9 @@ h1 {
   gap: 0.5rem;
   padding: 0.55rem 0.9rem;
   border-radius: 999px;
-  border: 1px solid rgba(216, 228, 255, 0.35);
-  background: rgba(10, 28, 61, 0.55);
-  color: #f4f7ff;
+  border: 1px solid rgba(210, 185, 139, 0.36);
+  background: rgba(20, 17, 24, 0.62);
+  color: #f1e5cb;
   font-size: clamp(0.73rem, 1.5vw, 0.86rem);
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -710,7 +710,7 @@ h1 {
   backdrop-filter: blur(10px);
   box-shadow:
     0 8px 22px rgba(0, 0, 0, 0.3),
-    inset 0 0 12px rgba(255, 255, 255, 0.08);
+    inset 0 0 12px rgba(255, 233, 191, 0.08);
   transition: background 220ms ease, border-color 220ms ease, transform 220ms ease, color 220ms ease;
 }
 
@@ -727,30 +727,30 @@ h1 {
   width: 0.62rem;
   height: 0.62rem;
   border-radius: 50%;
-  background: #9affc7;
+  background: #f2cf8b;
   box-shadow:
-    0 0 0 0 rgba(154, 255, 199, 0.55),
-    0 0 10px rgba(154, 255, 199, 0.82);
+    0 0 0 0 rgba(242, 207, 139, 0.52),
+    0 0 10px rgba(242, 207, 139, 0.76);
   animation: music-dot-pulse 1.8s ease-in-out infinite;
 }
 
 .music-toggle.is-off {
-  background: rgba(27, 34, 51, 0.6);
-  border-color: rgba(202, 213, 238, 0.28);
-  color: rgba(232, 238, 255, 0.85);
+  background: rgba(34, 32, 38, 0.62);
+  border-color: rgba(164, 149, 124, 0.3);
+  color: rgba(209, 196, 173, 0.86);
 }
 
 .music-toggle.is-off .music-toggle__dot {
-  background: #a9b7da;
-  box-shadow: 0 0 10px rgba(171, 185, 219, 0.38);
+  background: #9f8f78;
+  box-shadow: 0 0 10px rgba(159, 143, 120, 0.34);
   animation: none;
 }
 
 .music-toggle.is-waiting .music-toggle__dot {
-  background: #ffe4a1;
+  background: #f2c97a;
   box-shadow:
-    0 0 0 0 rgba(255, 228, 161, 0.5),
-    0 0 10px rgba(255, 213, 128, 0.82);
+    0 0 0 0 rgba(242, 201, 122, 0.46),
+    0 0 10px rgba(242, 201, 122, 0.8);
   animation: music-dot-pulse 1.2s ease-in-out infinite;
 }
 
@@ -761,7 +761,7 @@ h1 {
   pointer-events: none;
   filter:
     brightness(calc(0.96 + var(--mosque-flash)))
-    saturate(calc(1 + var(--mosque-flash) * 0.55));
+    saturate(calc(1 + var(--mosque-flash) * 0.28));
   transition: filter 180ms ease-out;
 }
 
@@ -783,7 +783,7 @@ h1 {
 .mosque .dome,
 .mosque .minaret {
   position: absolute;
-  background: linear-gradient(180deg, #07204a, #020a1b);
+  background: linear-gradient(180deg, #081427, #03070f);
 }
 
 .mosque .dome {
@@ -800,8 +800,8 @@ h1 {
   height: 14px;
   translate: -50% 0;
   border-radius: 999px;
-  background: rgba(246, 215, 123, 0.62);
-  box-shadow: 0 0 12px rgba(246, 215, 123, 0.7);
+  background: rgba(221, 181, 109, 0.58);
+  box-shadow: 0 0 10px rgba(221, 181, 109, 0.6);
 }
 
 .mosque .dome.main {
@@ -837,7 +837,7 @@ h1 {
   inset: -16px 6px auto;
   height: 16px;
   border-radius: 8px 8px 0 0;
-  background: linear-gradient(180deg, #0f2f62, #041633);
+  background: linear-gradient(180deg, #0c1f3c, #060f20);
 }
 
 .mosque .minaret::after {
@@ -849,8 +849,8 @@ h1 {
   height: 24px;
   translate: -50% 0;
   border-radius: 50px;
-  background: rgba(246, 215, 123, 0.58);
-  box-shadow: 0 0 12px rgba(246, 215, 123, 0.7);
+  background: rgba(221, 181, 109, 0.56);
+  box-shadow: 0 0 10px rgba(221, 181, 109, 0.6);
 }
 
 .mosque .minaret.left {
@@ -901,13 +901,13 @@ h1 {
   0%,
   100% {
     box-shadow:
-      0 0 20px rgba(255, 238, 166, 0.6),
-      0 0 44px rgba(255, 238, 166, 0.25);
+      0 0 20px rgba(236, 211, 163, 0.55),
+      0 0 42px rgba(201, 162, 103, 0.22);
   }
   50% {
     box-shadow:
-      0 0 30px rgba(255, 238, 166, 0.9),
-      0 0 72px rgba(255, 238, 166, 0.38);
+      0 0 28px rgba(236, 211, 163, 0.82),
+      0 0 64px rgba(201, 162, 103, 0.34);
   }
 }
 
@@ -1005,15 +1005,15 @@ h1 {
   0%,
   100% {
     text-shadow:
-      0 0 12px rgba(255, 255, 255, 0.32),
-      0 0 22px rgba(246, 215, 123, 0.42),
-      0 0 34px rgba(246, 215, 123, 0.3);
+      0 0 10px rgba(255, 247, 228, 0.3),
+      0 0 18px rgba(231, 192, 114, 0.34),
+      0 0 28px rgba(200, 147, 74, 0.24);
   }
   50% {
     text-shadow:
-      0 0 20px rgba(255, 255, 255, 0.48),
-      0 0 34px rgba(246, 215, 123, 0.72),
-      0 0 58px rgba(246, 215, 123, 0.5);
+      0 0 16px rgba(255, 247, 228, 0.4),
+      0 0 30px rgba(231, 192, 114, 0.62),
+      0 0 46px rgba(200, 147, 74, 0.38);
   }
 }
 
@@ -1060,13 +1060,13 @@ h1 {
   0%,
   100% {
     box-shadow:
-      0 0 0 0 rgba(154, 255, 199, 0.45),
-      0 0 10px rgba(154, 255, 199, 0.8);
+      0 0 0 0 rgba(242, 207, 139, 0.42),
+      0 0 10px rgba(242, 207, 139, 0.78);
   }
   50% {
     box-shadow:
-      0 0 0 0.38rem rgba(154, 255, 199, 0),
-      0 0 14px rgba(154, 255, 199, 0.94);
+      0 0 0 0.38rem rgba(242, 207, 139, 0),
+      0 0 14px rgba(242, 207, 139, 0.92);
   }
 }
 
