@@ -3,17 +3,22 @@
 const canvas = document.getElementById("fireworks-canvas");
 const ctx = canvas ? canvas.getContext("2d") : null;
 const starLayer = document.getElementById("stars-layer");
+const cloudsLayer = document.getElementById("clouds-layer");
+const fireworkLight = document.getElementById("firework-light");
 const bgMusic = document.getElementById("bg-music");
 const musicToggle = document.getElementById("music-toggle");
 const musicToggleLabel = musicToggle ? musicToggle.querySelector(".music-toggle__label") : null;
 const introScreen = document.getElementById("intro-screen");
 const introDust = document.getElementById("intro-dust");
 const celebrateBtn = document.getElementById("celebrate-btn");
+const rootStyle = document.documentElement.style;
 
 if (
   !canvas ||
   !ctx ||
   !starLayer ||
+  !cloudsLayer ||
+  !fireworkLight ||
   !bgMusic ||
   !musicToggle ||
   !musicToggleLabel ||
@@ -45,6 +50,8 @@ let particles = [];
 let nextLaunchTime = 0;
 let frameId = 0;
 let resizeTimer = 0;
+let moonFlickerTimer = 0;
+let flashResetTimer = 0;
 
 let fireworksStarted = false;
 let introStarted = false;
@@ -82,6 +89,34 @@ function generateStars(count) {
 }
 
 /**
+ * Build soft cloud wisps with random sizes, positions, and drift timings.
+ */
+function generateClouds(count) {
+  const fragment = document.createDocumentFragment();
+  cloudsLayer.textContent = "";
+
+  for (let i = 0; i < count; i += 1) {
+    const cloud = document.createElement("span");
+    const widthRem = randomBetween(9, 20);
+    const heightRem = widthRem * randomBetween(0.22, 0.34);
+
+    cloud.className = "cloud";
+    cloud.style.setProperty("--x", `${randomBetween(-14, 86).toFixed(2)}%`);
+    cloud.style.setProperty("--y", `${randomBetween(7, 44).toFixed(2)}%`);
+    cloud.style.setProperty("--w", `${widthRem.toFixed(2)}rem`);
+    cloud.style.setProperty("--h", `${heightRem.toFixed(2)}rem`);
+    cloud.style.setProperty("--o", `${randomBetween(0.06, 0.2).toFixed(3)}`);
+    cloud.style.setProperty("--blur", `${randomBetween(8, 18).toFixed(2)}px`);
+    cloud.style.setProperty("--cloud-duration", `${randomBetween(44, 96).toFixed(2)}s`);
+    cloud.style.setProperty("--cloud-delay", `${randomBetween(-70, 0).toFixed(2)}s`);
+
+    fragment.appendChild(cloud);
+  }
+
+  cloudsLayer.appendChild(fragment);
+}
+
+/**
  * Keep canvas crisp on high-density displays.
  */
 function resizeCanvas() {
@@ -107,6 +142,33 @@ function getResponsiveStarCount() {
   }
 
   return window.innerWidth < 640 ? 80 : 150;
+}
+
+function getResponsiveCloudCount() {
+  if (reduceMotion) {
+    return 3;
+  }
+
+  return window.innerWidth < 640 ? 4 : 7;
+}
+
+function updateMoonAtmosphere() {
+  if (reduceMotion) {
+    return;
+  }
+
+  rootStyle.setProperty("--moon-jitter", `${randomBetween(0.94, 1.12).toFixed(3)}`);
+  rootStyle.setProperty("--moon-halo-jitter", `${randomBetween(0.76, 1.18).toFixed(3)}`);
+  rootStyle.setProperty("--moon-ambient", `${randomBetween(0.75, 1.1).toFixed(3)}`);
+}
+
+function scheduleMoonAtmosphere() {
+  if (reduceMotion) {
+    return;
+  }
+
+  updateMoonAtmosphere();
+  moonFlickerTimer = window.setTimeout(scheduleMoonAtmosphere, randomBetween(1300, 3200));
 }
 
 function updateMusicButtonState() {
@@ -291,6 +353,25 @@ function playExplosionSound(x, intensity = 1) {
   boom.stop(now + 0.4);
 }
 
+function triggerFireworkLight(x, y, intensity = 1) {
+  const strength = Math.max(0.14, Math.min(0.56, intensity * 0.42));
+  const scale = 0.82 + Math.min(0.66, intensity * 0.38);
+  const mosqueBoost = Math.min(0.52, 0.2 + intensity * 0.2);
+
+  fireworkLight.style.left = `${x}px`;
+  fireworkLight.style.top = `${y}px`;
+  fireworkLight.style.setProperty("--flash-opacity", strength.toFixed(3));
+  fireworkLight.style.setProperty("--flash-scale", scale.toFixed(3));
+  fireworkLight.classList.add("active");
+
+  rootStyle.setProperty("--mosque-flash", mosqueBoost.toFixed(3));
+  window.clearTimeout(flashResetTimer);
+  flashResetTimer = window.setTimeout(() => {
+    fireworkLight.classList.remove("active");
+    rootStyle.setProperty("--mosque-flash", "0");
+  }, 190);
+}
+
 class Firework {
   constructor() {
     this.x = randomBetween(width * 0.1, width * 0.9);
@@ -343,6 +424,7 @@ class Firework {
   explode() {
     const count = reduceMotion ? 18 : Math.floor(randomBetween(44, 82));
     playExplosionSound(this.x, count / 60);
+    triggerFireworkLight(this.x, this.y, count / 60);
 
     for (let i = 0; i < count; i += 1) {
       particles.push(new Particle(this.x, this.y, this.color));
@@ -534,6 +616,9 @@ async function beginExperience() {
 function init() {
   resizeCanvas();
   generateStars(STAR_COUNT);
+  generateClouds(getResponsiveCloudCount());
+  updateMoonAtmosphere();
+  scheduleMoonAtmosphere();
   setupBackgroundMusic();
 }
 
@@ -543,6 +628,7 @@ window.addEventListener("resize", () => {
   resizeTimer = window.setTimeout(() => {
     resizeCanvas();
     generateStars(getResponsiveStarCount());
+    generateClouds(getResponsiveCloudCount());
   }, 120);
 });
 
@@ -576,6 +662,8 @@ document.addEventListener("visibilitychange", () => {
     if (fireworksStarted) {
       cancelAnimationFrame(frameId);
     }
+    window.clearTimeout(moonFlickerTimer);
+    window.clearTimeout(flashResetTimer);
     return;
   }
 
@@ -587,6 +675,8 @@ document.addEventListener("visibilitychange", () => {
   if (introCompleted && musicEnabled && bgMusic.paused) {
     void playBackgroundMusic();
   }
+
+  scheduleMoonAtmosphere();
 });
 
 init();

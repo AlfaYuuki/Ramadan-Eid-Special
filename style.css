@@ -11,6 +11,10 @@
   --accent: #f4d77b;
   --mosque-main: #020a1b;
   --mosque-soft: #041633;
+  --moon-jitter: 1;
+  --moon-halo-jitter: 1;
+  --moon-ambient: 0.92;
+  --mosque-flash: 0;
 }
 
 * {
@@ -295,8 +299,10 @@ body.intro-burst .intro-moon {
 
 .sky,
 #stars-layer,
+#clouds-layer,
 #fireworks-canvas,
-.mosque {
+.mosque,
+#firework-light {
   position: fixed;
   inset: 0;
 }
@@ -305,9 +311,105 @@ body.intro-burst .intro-moon {
   z-index: 0;
 }
 
+#firework-light {
+  z-index: 1;
+  pointer-events: none;
+  width: clamp(18rem, 34vw, 30rem);
+  height: clamp(18rem, 34vw, 30rem);
+  left: 50%;
+  top: 50%;
+  inset: auto;
+  translate: -50% -50%;
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(var(--flash-scale, 1));
+  background:
+    radial-gradient(
+      circle,
+      rgba(208, 231, 255, 0.28) 0%,
+      rgba(122, 171, 255, 0.18) 28%,
+      rgba(51, 92, 173, 0.08) 50%,
+      rgba(7, 18, 44, 0) 74%
+    );
+  filter: blur(7px);
+  transition: opacity 220ms ease, transform 220ms ease;
+}
+
+#firework-light.active {
+  opacity: var(--flash-opacity, 0.28);
+}
+
 #stars-layer {
   z-index: 0;
   overflow: hidden;
+}
+
+.horizon-haze {
+  position: absolute;
+  left: -8%;
+  right: -8%;
+  bottom: -15%;
+  height: clamp(10rem, 30vh, 18rem);
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse at 50% 100%,
+      rgba(131, 165, 225, 0.2) 0%,
+      rgba(86, 121, 190, 0.12) 36%,
+      rgba(22, 46, 96, 0.04) 58%,
+      rgba(3, 10, 29, 0) 78%
+    );
+  filter: blur(10px);
+}
+
+.moon-sky-glow {
+  position: absolute;
+  top: calc(clamp(5rem, 9vw, 8rem) - clamp(4.6rem, 8vw, 6rem));
+  right: calc(clamp(2.5rem, 9vw, 8rem) - clamp(4.6rem, 8vw, 6rem));
+  width: clamp(14rem, 28vw, 22rem);
+  aspect-ratio: 1 / 1;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: 50%;
+  opacity: calc(0.78 * var(--moon-ambient));
+  transform: scale(var(--moon-jitter));
+  background:
+    radial-gradient(
+      circle,
+      rgba(124, 173, 255, 0.28) 0%,
+      rgba(77, 125, 218, 0.16) 36%,
+      rgba(38, 70, 142, 0.06) 55%,
+      rgba(12, 25, 60, 0) 76%
+    );
+  filter: blur(6px);
+  transition: opacity 2.6s ease, transform 2.6s ease;
+}
+
+#clouds-layer {
+  z-index: 3;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.cloud {
+  position: absolute;
+  left: var(--x, 0%);
+  top: var(--y, 25%);
+  width: var(--w, 14rem);
+  height: var(--h, 4rem);
+  opacity: var(--o, 0.14);
+  border-radius: 999px;
+  background:
+    radial-gradient(
+      ellipse at 50% 50%,
+      rgba(182, 209, 255, 0.24) 0%,
+      rgba(135, 168, 235, 0.14) 32%,
+      rgba(48, 84, 149, 0.05) 62%,
+      rgba(15, 31, 68, 0) 100%
+    );
+  filter: blur(var(--blur, 10px));
+  animation: cloud-drift var(--cloud-duration, 72s) ease-in-out var(--cloud-delay, 0s) infinite alternate;
 }
 
 .star {
@@ -328,6 +430,7 @@ body.intro-burst .intro-moon {
   right: clamp(2.5rem, 9vw, 8rem);
   width: clamp(7rem, 13vw, 11rem);
   aspect-ratio: 1 / 1;
+  z-index: 2;
   display: grid;
   place-items: center;
   animation: moon-sway 9s ease-in-out infinite;
@@ -340,6 +443,9 @@ body.intro-burst .intro-moon {
   border-radius: 50%;
   background: radial-gradient(circle, var(--moon-glow) 0%, rgba(246, 232, 162, 0.05) 55%, transparent 72%);
   filter: blur(3px);
+  opacity: calc(0.76 * var(--moon-halo-jitter));
+  transform: scale(var(--moon-jitter));
+  transition: opacity 2.4s ease, transform 2.4s ease, filter 2.4s ease;
   animation: halo-breathe 4.5s ease-in-out infinite;
 }
 
@@ -352,6 +458,8 @@ body.intro-burst .intro-moon {
   box-shadow:
     0 0 22px rgba(255, 238, 166, 0.75),
     0 0 52px rgba(255, 238, 166, 0.32);
+  filter: brightness(var(--moon-jitter));
+  transition: filter 2.4s ease, box-shadow 2.4s ease;
   animation: moon-glow 4.5s ease-in-out infinite;
 }
 
@@ -388,7 +496,9 @@ body.intro-burst .intro-moon {
   transform-origin: center calc(-1 * var(--drop));
   animation: fanous-sway var(--swing, 8s) ease-in-out var(--delay, 0s) infinite;
   transform: translateX(-50%) scale(var(--scale, 1)) rotate(5deg);
-  filter: drop-shadow(0 0 12px rgba(255, 206, 115, 0.34));
+  filter:
+    drop-shadow(0 0 12px rgba(255, 206, 115, 0.34))
+    drop-shadow(0 0 28px rgba(255, 159, 92, 0.16));
 }
 
 .fanous-1 {
@@ -468,6 +578,7 @@ body.intro-burst .intro-moon {
     radial-gradient(circle at 50% 52%, rgba(255, 248, 221, 0.96) 0 22%, rgba(255, 223, 141, 0.82) 34%, rgba(255, 164, 76, 0.38) 58%, transparent 74%),
     linear-gradient(180deg, rgba(255, 216, 143, 0.98) 0%, rgba(247, 170, 88, 0.95) 46%, rgba(188, 82, 39, 0.92) 100%);
   box-shadow:
+    0 0 34px rgba(255, 196, 122, 0.22),
     0 0 18px rgba(255, 198, 114, 0.55),
     inset 0 0 16px rgba(255, 240, 205, 0.5),
     inset 0 -8px 14px rgba(122, 36, 13, 0.38);
@@ -554,6 +665,16 @@ h1 {
   animation: text-fade-in 1.2s ease-out 0.9s forwards;
 }
 
+.blessing {
+  margin: 0.95rem 0 0;
+  color: rgba(214, 227, 255, 0.82);
+  font-size: clamp(0.86rem, 1.8vw, 1.06rem);
+  letter-spacing: 0.03em;
+  font-weight: 300;
+  opacity: 0;
+  animation: text-fade-in 1.35s ease-out 1.25s forwards;
+}
+
 .signature {
   position: fixed;
   left: 0;
@@ -638,6 +759,10 @@ h1 {
   top: auto;
   height: clamp(10.5rem, 27vh, 16rem);
   pointer-events: none;
+  filter:
+    brightness(calc(0.96 + var(--mosque-flash)))
+    saturate(calc(1 + var(--mosque-flash) * 0.55));
+  transition: filter 180ms ease-out;
 }
 
 .mosque .base {
@@ -757,6 +882,18 @@ h1 {
   }
   100% {
     translate: 0 -28px;
+  }
+}
+
+@keyframes cloud-drift {
+  0% {
+    transform: translateX(-9vw) translateY(0);
+  }
+  50% {
+    transform: translateX(3vw) translateY(-0.45rem);
+  }
+  100% {
+    transform: translateX(12vw) translateY(0.2rem);
   }
 }
 
@@ -995,6 +1132,11 @@ h1 {
     margin-inline: auto;
   }
 
+  .blessing {
+    max-width: 30ch;
+    margin-inline: auto;
+  }
+
   .signature {
     bottom: 0.95rem;
     letter-spacing: 0.18em;
@@ -1026,12 +1168,14 @@ h1 {
   .moon-wrapper,
   .moon-halo,
   .crescent,
+  .cloud,
   .fanous,
   .fanous-core,
   .music-toggle__dot,
   h1,
   .glass-card,
-  .wish {
+  .wish,
+  .blessing {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
   }

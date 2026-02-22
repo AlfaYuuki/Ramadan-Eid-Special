@@ -41,6 +41,7 @@
 
   <div id="main-scene" class="main-scene">
     <canvas id="fireworks-canvas" aria-hidden="true"></canvas>
+    <div id="firework-light" class="firework-light" aria-hidden="true"></div>
 
     <button
       id="music-toggle"
@@ -54,12 +55,16 @@
     </button>
 
     <div class="sky" aria-hidden="true">
+      <div class="horizon-haze"></div>
       <div id="stars-layer"></div>
+      <div class="moon-sky-glow"></div>
 
       <div class="moon-wrapper">
         <div class="moon-halo"></div>
         <div class="crescent"></div>
       </div>
+
+      <div id="clouds-layer" class="clouds-layer"></div>
     </div>
 
     <div class="lanterns" aria-hidden="true">
@@ -85,6 +90,7 @@
         <p class="tag">Ramadan Special</p>
         <h1 id="eid-title">Eid Mubarak</h1>
         <p class="wish">Wishing you peace, happiness, and prosperity.</p>
+        <p class="blessing">May this night bring peace to your heart.</p>
       </section>
     </main>
 
