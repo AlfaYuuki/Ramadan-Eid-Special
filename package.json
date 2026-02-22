@@ -1,0 +1,15 @@
+{
+  "name": "ramadan-eid-kiosk",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Controlled-environment Ramadan/Eid celebration app with guaranteed startup audio.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "kiosk": "electron . --kiosk",
+    "dev": "electron . --dev"
+  },
+  "devDependencies": {
+    "electron": "^30.0.0"
+  }
+}

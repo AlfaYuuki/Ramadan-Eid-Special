@@ -31,10 +31,11 @@ let resizeTimer = 0;
 const palette = ["#f4d77b", "#8be9ff", "#ff91d0", "#7eb6ff", "#c2ff9a", "#ffd1a8"];
 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
 const MUSIC_VOLUME = 0.24;
+const SOUND_ON_BY_DEFAULT = true;
 
 let audioContext = null;
 let fireworkNoiseBuffer = null;
-let musicEnabled = true;
+let musicEnabled = SOUND_ON_BY_DEFAULT;
 
 /**
  * Create floating stars with randomized size, position, and animation timing.
@@ -91,7 +92,7 @@ function updateMusicButtonState() {
   musicToggle.classList.toggle("is-waiting", musicEnabled && !isPlaying);
   musicToggle.setAttribute("aria-pressed", String(musicEnabled));
   musicToggle.setAttribute("aria-label", musicEnabled ? "Mute background music" : "Unmute background music");
-  musicToggleLabel.textContent = !musicEnabled ? "Music Off" : isPlaying ? "Music On" : "Play Music";
+  musicToggleLabel.textContent = musicEnabled ? "Music On" : "Music Off";
 }
 
 async function playBackgroundMusic() {
@@ -101,6 +102,7 @@ async function playBackgroundMusic() {
 
   try {
     await bgMusic.play();
+    void primeFireworkAudio();
     updateMusicButtonState();
     return true;
   } catch {
@@ -117,16 +119,34 @@ function setupBackgroundMusic() {
   updateMusicButtonState();
 }
 
-function getAudioContext() {
+function getAudioContext(createIfMissing = true) {
   if (!AudioContextClass) {
     return null;
   }
 
-  if (!audioContext) {
+  if (!audioContext && createIfMissing) {
     audioContext = new AudioContextClass();
   }
 
   return audioContext;
+}
+
+async function primeFireworkAudio() {
+  const context = getAudioContext(true);
+  if (!context) {
+    return false;
+  }
+
+  if (context.state === "running") {
+    return true;
+  }
+
+  try {
+    await context.resume();
+    return context.state === "running";
+  } catch {
+    return false;
+  }
 }
 
 function getNoiseBuffer(context) {
@@ -167,7 +187,7 @@ function positionToPan(x) {
 }
 
 function playLaunchSound(x) {
-  const context = getAudioContext();
+  const context = getAudioContext(false);
   if (!context || context.state !== "running") {
     return;
   }
@@ -199,7 +219,7 @@ function playLaunchSound(x) {
 }
 
 function playExplosionSound(x, intensity = 1) {
-  const context = getAudioContext();
+  const context = getAudioContext(false);
   if (!context || context.state !== "running") {
     return;
   }
@@ -252,32 +272,30 @@ function playExplosionSound(x, intensity = 1) {
       const crackle = context.createOscillator();
       const crackleGain = context.createGain();
       const delay = randomBetween(0.03, 0.18);
+      const startTime = now + delay;
+      const endTime = startTime + randomBetween(0.045, 0.08);
 
-      crackle.type = "square";
-      crackle.frequency.setValueAtTime(randomBetween(900, 2100), now + delay);
+      // Softer transient shape to avoid audible click artifacts.
+      crackle.type = "triangle";
+      crackle.frequency.setValueAtTime(randomBetween(700, 1600), startTime);
+      crackle.frequency.exponentialRampToValueAtTime(randomBetween(280, 640), endTime);
 
-      crackleGain.gain.setValueAtTime(0.0001, now + delay);
-      crackleGain.gain.exponentialRampToValueAtTime(0.02, now + delay + 0.005);
-      crackleGain.gain.exponentialRampToValueAtTime(0.0001, now + delay + 0.06);
+      crackleGain.gain.setValueAtTime(0.00001, startTime);
+      crackleGain.gain.linearRampToValueAtTime(0.012, startTime + 0.01);
+      crackleGain.gain.exponentialRampToValueAtTime(0.0001, endTime);
 
       crackle.connect(crackleGain);
       crackleGain.connect(panNode);
 
-      crackle.start(now + delay);
-      crackle.stop(now + delay + 0.07);
+      crackle.start(startTime);
+      crackle.stop(endTime + 0.01);
     }
   }
 }
 
 function unlockAudio() {
-  const context = getAudioContext();
-  if (context && context.state !== "running") {
-    context.resume().catch(() => {
-      // Ignore rejected resume attempts; next interaction will try again.
-    });
-  }
-
   // Mobile browsers may require interaction before media playback is allowed.
+  void primeFireworkAudio();
   void playBackgroundMusic();
 }
 
@@ -444,6 +462,7 @@ function init() {
   resizeCanvas();
   generateStars(STAR_COUNT);
   setupBackgroundMusic();
+  void primeFireworkAudio();
   void playBackgroundMusic();
 
   // Start with a small welcome burst after initial paint.
@@ -498,6 +517,8 @@ document.addEventListener("visibilitychange", () => {
 
 window.addEventListener("pointerdown", unlockAudio, { once: true, passive: true });
 window.addEventListener("touchstart", unlockAudio, { once: true, passive: true });
+window.addEventListener("mousedown", unlockAudio, { once: true, passive: true });
+window.addEventListener("click", unlockAudio, { once: true, passive: true });
 window.addEventListener("keydown", unlockAudio, { once: true });
 
 init();
