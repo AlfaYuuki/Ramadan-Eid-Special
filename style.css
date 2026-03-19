@@ -1284,3 +1284,17 @@ h1 {
     max-height: 100%;
   }
 }
+
+.signature {
+  animation: glowText 3s ease-in-out infinite;
+}
+
+@keyframes glowText {
+  0%,100% { 
+    opacity: 0.7; 
+  }
+  50% { 
+    opacity: 1; 
+    text-shadow: 0 0 10px #ddb56d; 
+  }
+    }
